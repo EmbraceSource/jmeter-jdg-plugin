@@ -15,12 +15,14 @@ public class HotRod extends AbstractJavaSamplerClient {
 	private String cacheName = null;
 	private String putOrGet;
 	private String value;
+	private Integer keyRang;
 
 	@Override
 	public void setupTest(JavaSamplerContext context) {
 		super.setupTest(context);
 		cacheName = context.getParameter("cacheName", "");
 		putOrGet = context.getParameter("putOrGet", "put");
+		keyRang = context.getIntParameter("keyRang", 100000);
 		int size = context.getIntParameter("size", 1024);
 		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < size; i++) {
@@ -41,23 +43,24 @@ public class HotRod extends AbstractJavaSamplerClient {
 	@Override
 	public SampleResult runTest(JavaSamplerContext arg0) {
 		SampleResult sr = new SampleResult();
-		sr.setSampleLabel("infinispan java rod hot");
+		sr.setSampleLabel("hotrod-" + putOrGet);
 		BasicCache<String, Object> cache = null;
 		if (!cacheName.equals("")) {
 			cache = container.getCache(cacheName);
 		} else {
 			cache = container.getCache();
 		}
-		String key = Thread.currentThread().getName()
-				+ new Random().nextInt(100000);
+		String key = cacheName + new Random().nextInt(keyRang);
 		try { // 这里调用我们要测试的java类，这里我调用的是一个Test类
 			sr.sampleStart(); // 记录程序执行时间，以及执行结果
+			Object val = null;
 			if (putOrGet.equals("put")) {
 				cache.put(key, value);
+				sr.setSuccessful(true);
 			} else {
-				cache.get(key);
+				val = cache.get(key);
+				sr.setSuccessful(val != null);
 			}
-			sr.setSuccessful(true);
 		} catch (Throwable e) {
 			System.out.println("Exception is " + e.getMessage());
 			sr.setSuccessful(false);
@@ -71,6 +74,7 @@ public class HotRod extends AbstractJavaSamplerClient {
 		Arguments params = new Arguments();
 		params.addArgument("cacheName", "");
 		params.addArgument("size", "1024");
+		params.addArgument("keyRang", "100000");
 		params.addArgument("putOrGet", "put");
 
 		return params;
