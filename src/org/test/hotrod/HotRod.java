@@ -11,7 +11,7 @@ import org.infinispan.api.BasicCacheContainer;
 import org.infinispan.client.hotrod.RemoteCacheManager;
 
 public class HotRod extends AbstractJavaSamplerClient {
-	private static BasicCacheContainer container = new RemoteCacheManager();
+	private static BasicCacheContainer container = null;
 	private String cacheName = null;
 	private String putOrGet;
 	private String value;
@@ -21,6 +21,10 @@ public class HotRod extends AbstractJavaSamplerClient {
 	@Override
 	public void setupTest(JavaSamplerContext context) {
 		super.setupTest(context);
+		if(container==null){
+			container = new RemoteCacheManager();
+		}
+		
 		cacheName = context.getParameter("cacheName", "");
 		putOrGet = context.getParameter("putOrGet", "put");
 		keyLength = context.getIntParameter("keyLength", 150);
@@ -42,6 +46,7 @@ public class HotRod extends AbstractJavaSamplerClient {
 	public void teardownTest(JavaSamplerContext context) {
 		super.teardownTest(context);
 		container.stop();
+		container = null;
 	}
 
 	public  String repeat(char ch, int repeat) {
