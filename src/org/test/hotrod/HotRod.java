@@ -15,6 +15,7 @@ public class HotRod extends AbstractJavaSamplerClient {
 	private String cacheName = null;
 	private String putOrGet;
 	private String value;
+	private Integer keyLength;
 	private Integer keyRang;
 
 	@Override
@@ -22,6 +23,7 @@ public class HotRod extends AbstractJavaSamplerClient {
 		super.setupTest(context);
 		cacheName = context.getParameter("cacheName", "");
 		putOrGet = context.getParameter("putOrGet", "put");
+		keyLength = context.getIntParameter("keyLength", 150);
 		keyRang = context.getIntParameter("keyRang", 100000);
 		int size = context.getIntParameter("size", 1024);
 		StringBuilder sb = new StringBuilder();
@@ -31,6 +33,8 @@ public class HotRod extends AbstractJavaSamplerClient {
 		value = sb.toString();
 		System.out.println("cacheName : " + cacheName);
 		System.out.println("size : " + size);
+		System.out.println("keyLength : " + keyLength);
+		System.out.println("keyRang : " + keyRang);
 		System.out.println("putOrGet : " + putOrGet);
 	}
 
@@ -40,6 +44,14 @@ public class HotRod extends AbstractJavaSamplerClient {
 		container.stop();
 	}
 
+	public  String repeat(char ch, int repeat) {
+		char[] buf = new char[repeat];
+		for (int i = repeat - 1; i >= 0; i--) {
+			buf[i] = ch;
+		}
+		return new String(buf);
+	}
+	
 	@Override
 	public SampleResult runTest(JavaSamplerContext arg0) {
 		SampleResult sr = new SampleResult();
@@ -50,7 +62,8 @@ public class HotRod extends AbstractJavaSamplerClient {
 		} else {
 			cache = container.getCache();
 		}
-		String key = cacheName + new Random().nextInt(keyRang);
+		int in=new Random().nextInt(keyRang);
+		String key = repeat('a', keyLength-Integer.toString(in).length()) + in;
 		try { // 这里调用我们要测试的java类，这里我调用的是一个Test类
 			sr.sampleStart(); // 记录程序执行时间，以及执行结果
 			Object val = null;
@@ -74,6 +87,7 @@ public class HotRod extends AbstractJavaSamplerClient {
 		Arguments params = new Arguments();
 		params.addArgument("cacheName", "");
 		params.addArgument("size", "1024");
+		params.addArgument("keyLength", "150");
 		params.addArgument("keyRang", "100000");
 		params.addArgument("putOrGet", "put");
 
