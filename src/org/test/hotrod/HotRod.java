@@ -1,6 +1,7 @@
 package org.test.hotrod;
 
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -10,7 +11,6 @@ import org.apache.jmeter.protocol.java.sampler.JavaSamplerContext;
 import org.apache.jmeter.samplers.SampleResult;
 import org.infinispan.client.hotrod.RemoteCache;
 import org.infinispan.client.hotrod.RemoteCacheManager;
-import org.infinispan.client.hotrod.VersionedValue;
 
 public class HotRod extends AbstractJavaSamplerClient {
 	private static RemoteCacheManager container = null;
@@ -20,6 +20,7 @@ public class HotRod extends AbstractJavaSamplerClient {
 	private String value;
 	private Integer keyLength;
 	private Integer keyRang;
+	private long timeout;
 
 	@Override
 	public void setupTest(JavaSamplerContext context) {
@@ -38,9 +39,10 @@ public class HotRod extends AbstractJavaSamplerClient {
 		}
 
 		cacheName = context.getParameter("cacheName", "");
-		putOrGet = context.getParameter("putOrGet", "put");
+		putOrGet = context.getParameter("putOrGet(put,get,getput)", "put");
 		keyLength = context.getIntParameter("keyLength", 150);
 		keyRang = context.getIntParameter("keyRang", 100000);
+		timeout = context.getLongParameter("timeout(s)", 60);
 		int size = context.getIntParameter("size", 1024);
 
 		if (value == null) {
@@ -85,17 +87,23 @@ public class HotRod extends AbstractJavaSamplerClient {
 			sr.sampleStart(); // 记录程序执行时间，以及执行结果
 			Object val = null;
 			if (putOrGet.equals("put")) {
-				VersionedValue<String> versionedValue=cache.getVersioned(key);
-				if(versionedValue!=null){
-					cache.replaceWithVersion(key, value, versionedValue.getVersion());
-				}else{
-					cache.put(key, value);
-				}
-				
+//				VersionedValue<String> versionedValue=cache.getVersioned(key);
+//				if(versionedValue!=null){
+//					cache.replaceWithVersion(key, value, versionedValue.getVersion());
+//				}else{
+//					cache.put(key, value);
+//				}
+				cache.put(key, value);
 				sr.setSuccessful(true);
-			} else {
+			} else if (putOrGet.equals("get")){
 				val = cache.get(key);
 				sr.setSuccessful(val != null);
+			}else{
+				val = cache.get(key);
+				if(val==null){
+					cache.put(key, value, timeout, TimeUnit.SECONDS);
+				}
+				sr.setSuccessful(true);
 			}
 		} catch (Throwable e) {
 			System.out.println("Exception is " + e.getMessage());
@@ -113,7 +121,8 @@ public class HotRod extends AbstractJavaSamplerClient {
 		params.addArgument("size", "1024");
 		params.addArgument("keyLength", "150");
 		params.addArgument("keyRang", "100000");
-		params.addArgument("putOrGet", "put");
+		params.addArgument("putOrGet(put,get,getput)", "put");
+		params.addArgument("timeout(s)", "60");
 
 		return params;
 
