@@ -62,14 +62,7 @@ public class HotRod extends AbstractJavaSamplerClient {
 		container=null;
 	}
 
-	public String repeat(char ch, int repeat) {
-		char[] buf = new char[repeat];
-		for (int i = repeat - 1; i >= 0; i--) {
-			buf[i] = ch;
-		}
-		return new String(buf);
-	}
-
+		
 	@Override
 	public SampleResult runTest(JavaSamplerContext arg0) {
 		SampleResult sr = new SampleResult();
@@ -81,7 +74,7 @@ public class HotRod extends AbstractJavaSamplerClient {
 			cache = container.getCache();
 		}
 		int in = new Random().nextInt(keyRang);
-		String key = repeat('a', keyLength - Integer.toString(in).length())
+		String key = Strings.repeat('a', keyLength - Integer.toString(in).length())
 				+ in;
 		try { // 这里调用我们要测试的java类，这里我调用的是一个Test类
 			sr.sampleStart(); // 记录程序执行时间，以及执行结果

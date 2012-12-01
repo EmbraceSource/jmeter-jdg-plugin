@@ -10,8 +10,11 @@ public class TestTcpTransportFactory2 {
 	 */
 	public static void main(String[] args) {
 		RemoteCacheManager container = new RemoteCacheManager();
-		RemoteCache<String, Object> cache = container.getCache();
-		cache.put("1", "1");
+		RemoteCache<String, Object> cache = container.getCache("left");
+		cache.put("2", "222");
+		
+		Object val=cache.get("2");
+		System.out.println(val);
 		cache.stop();
 	}
 

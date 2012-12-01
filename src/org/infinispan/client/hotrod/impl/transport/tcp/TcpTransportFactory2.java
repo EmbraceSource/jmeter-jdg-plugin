@@ -22,10 +22,6 @@ import org.infinispan.client.hotrod.logging.Log;
 import org.infinispan.client.hotrod.logging.LogFactory;
 import org.infinispan.util.Util;
 
-/**
- * @author Mircea.Markus@jboss.com
- * @since 4.1
- */
 public class TcpTransportFactory2 extends TcpTransportFactory {
 
 	private static final Log log = LogFactory.getLog(
@@ -345,14 +341,7 @@ public class TcpTransportFactory2 extends TcpTransportFactory {
 			int maxActive = connectionPool.getMaxActive();
 			if (maxActive > 0) {
 				transportCount = Math
-						.max(maxActive * servers.size(), maxActive); // to avoid
-																		// int
-																		// overflow
-																		// when
-																		// maxActive
-																		// is
-																		// very
-																		// high!
+						.max(maxActive * servers.size(), maxActive);
 			} else {
 				transportCount = 10 * servers.size();
 			}
